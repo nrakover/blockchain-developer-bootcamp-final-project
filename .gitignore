@@ -1,4 +1,5 @@
 .wallet-mnemonic
 .infura-project-id
+.env
 build
 node_modules

@@ -3,7 +3,6 @@
 - A number of existing and hypothetical _decentralized_ services could benefit from on-chain proof that an address "owns" a phone number (i.e. the controlling entity has access to any message sent to the number)
 - There is currently no decentralized standard for proving that an on-chain address owns a phone number
 
-
 # Proposal
 A decentralized protocol that can create on-chain, verifyable proof that an address owns -- and is the sole owner of -- a particular phone number by means of attestations from a randomly-selected set of previously-verified accounts. The key objective is that, given successful attestations, an address should be able to easily prove to a 3rd party that:
 1. It owns _some_ verified phone number         [weak claim]
@@ -11,6 +10,24 @@ A decentralized protocol that can create on-chain, verifyable proof that an addr
 
 Ideally no 3rd party can use this system to ascertain an address-phone relationship without the owning address's active participation, i.e we would like for it to be infeasible for some adversary to unilaterally infer which address owns a particular number or inversely (and of greater concern) which number is owned by a particular address.
 
+# Scope for 'Final Project'
+This section describes the target scope for the bootcamp's final project, since fully implementing the protocol(s) described below during the bootcamp isn't super realistic with the time I have available. My proposed final project explores the following key flows from the **Approach 1** protocol below:
+1. Bootstrap protocol with a set of account-phone number pairs considered to be valid
+2. User requests verification of a given phone number
+3. Verifier issues a challenge for a verification request
+    - As a simplification, "issuing" the challenge will create the challenge message in the Web3 app, but not send it via SMS. The verifier user should then manually fire of the SMS
+4. Requesting user submits a challenge response
+    - Similarly to simplification above, the requesting user will need to take the SMS message received and input it manually into the Web3 app
+5. Protocol issues proof of phone number ownership upon successful verification
+6. Third-party validates that an account owns a particular phone number
+
+**Non-goals / key simplifications:**
+- Implementing the more private but more complicated **Approach 2(B)**
+- Building a mobile app to interact with the SMS stack -- this is a ubiquitously solved subproblem
+- Fleshing out incentivization of the protocol
+- Solving the SIM-swap problem (as briefly explained below)
+
+# Technical approaches
 
 ## Approach 1
 1. Account `$req_addrs` publishes a request for verification of _plaintext_ phone number `$num_to_verify` on-chain
@@ -43,25 +60,7 @@ Ideally no 3rd party can use this system to ascertain an address-phone relations
 This introduces a modification to **Approach 2** whereby rather than including `$num_to_verify` directly in the intent hash, we instead use an _encrypted_ version of `$num_to_verify` produced by encryption via a well-known distributed threshold encryption scheme (e.g. using NuCypher). This should allow us to implement role-based restrictions on who is able to verify a number (e.g. only an account in `$verifiers` or an account that currently owns `$num_to_verify`), which should render brute forcing a phone number infeasible.
 
 
-# Scope for 'Final Project'
-This sections describes the target scope for the bootcamp's final project, since fully implementing the protocol(s) described above during the bootcamp isn't super realistic with the time I have available. My proposed final project explores the following key flows from the **Approach 1** protocol:
-1. Bootstrap protocol with a set of account-phone number pairs considered to be valid
-2. User requests verification of a given phone number
-3. Verifier issues a challenge for a verification request
-    - As a simplification, "issuing" the challenge will create the challenge message in the Web3 app, but not send it via SMS. The verifier user should then manually fire of the SMS
-4. Requesting user submits a challenge response
-    - Similarly to simplification above, the requesting user will need to take the SMS message received and input it manually into the Web3 app
-5. Protocol issues proof of phone number ownership upon successful verification
-6. Third-party validates that an account owns a particular phone number
-
-**Non-goals / key simplifications:**
-- Implementing the more robust but more complicated **Approach 2(B)**
-- Building a mobile app to interact with the SMS stack -- this is a ubiquitously solved subproblem
-- Fleshing out incentivization of the protocol
-- Solving the SIM-swap problem (as briefly explained below)
-
-
-# Topics to flesh out
+# Future work
 - Incentivizing verifiers
 - Tolerance to phone number takeovers (e.g. SIM-swaps): preventing SIM-swaps is actually one of the killer use-cases for this protocol, but it requires some augmentation such as introducing a cooldown period between successful attestation and ownership being transferred during which previous phone number owner can "dispute"
 - Who will watch the watchmen, i.e. policing verifiers' off-chain actions: since part of the protocol occurs off-chain, there exists the possibility of verifiers incorrectly implementing the protocol (e.g. sending unencrypted secret codes) maliciously or inadvertently, and we would like the protocol to have some means of enforcing or disincintivizing such behavior
