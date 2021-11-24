@@ -5,7 +5,32 @@ contract VerifiablePhoneNumbers {
     // Types
     struct PhoneNumber {
         uint8 countryCode;
-        string number;
+        uint40 number;
+    }
+    struct Verifier {
+        address addr;
+        PhoneNumber number;
+    }
+    struct VerificationRequest {
+        address requester;
+        PhoneNumber number;
+        Verifier[] selectedVerifiers;
+    }
+    struct VerificationChallenge {
+        address verifierAddress;
+        bytes32 challengeHash;
+    }
+    enum VerificationState {
+        Null,
+        InProgress,
+        Succeeded,
+        Failed
+    }
+    enum ChallengeState {
+        Null,
+        Issued,
+        Completed,
+        Failed
     }
 
     // Events
@@ -14,19 +39,23 @@ contract VerifiablePhoneNumbers {
         address indexed requester,
         PhoneNumber indexed phoneNumber
     );
+    event LogVerifierSelected(
+        address indexed verifierAddress,
+        uint256 verificationRequestId
+    );
     event LogChallengeRecorded(
         uint256 indexed verificationRequestId,
-        uint8 challengeId
+        address verifier
     );
     event LogChallengeCompleted(
         uint256 indexed verificationRequestId,
-        uint8 challengeId
+        address verifier
     );
     event LogChallengeFailed(
         uint256 indexed verificationRequestId,
-        uint8 challengeId
+        address verifier
     );
-    event LogVerificationCompleted(
+    event LogVerificationSucceeded(
         uint256 indexed verificationRequestId,
         address indexed requester,
         PhoneNumber indexed phoneNumber
@@ -37,8 +66,40 @@ contract VerifiablePhoneNumbers {
         PhoneNumber indexed phoneNumber
     );
 
-    constructor() public {}
+    // State
+    address public owner;
+    uint256 public numVerifiers;
+    mapping(uint256 => Verifier) public verifiers;
 
+    mapping(uint8 => mapping(uint40 => address))
+        private issuedProofsOfOwnership;
+
+    uint256 private verificationRequestCounter = 0;
+    mapping(uint256 => VerificationRequest) private verificationRequests;
+    mapping(uint256 => VerificationState) private requestStates;
+
+    mapping(uint256 => mapping(address => ChallengeState))
+        private challengeStates;
+    mapping(uint256 => mapping(address => VerificationChallenge))
+        private verificationChallenges;
+
+    constructor(Verifier[] memory _verifiers) {
+        owner = msg.sender;
+        numVerifiers = _verifiers.length;
+        for (uint256 i = 0; i < _verifiers.length; i++) {
+            verifiers[i] = _verifiers[i];
+        }
+    }
+
+    // Modifiers
+    modifier isActiveVerification(uint256 verificationRequestId) {
+        require(
+            requestStates[verificationRequestId] == VerificationState.InProgress
+        );
+        _;
+    }
+
+    // API
     function requestVerification(PhoneNumber calldata phoneNumber)
         external
         returns (uint256 verificationRequestId)
@@ -49,15 +110,15 @@ contract VerifiablePhoneNumbers {
     function recordVerificationChallenge(
         uint256 verificationRequestId,
         bytes32 challengeHash
-    ) external returns (uint8 challengeId) {
+    ) external isActiveVerification(verificationRequestId) {
         // Verifier issues a challenge for a verification request
     }
 
     function submitChallengeResponse(
         uint256 verificationRequestId,
-        uint8 challengeId,
+        address verifier,
         uint32 secretCode
-    ) external {
+    ) external isActiveVerification(verificationRequestId) {
         // Requesting user submits a challenge response
     }
 
@@ -66,5 +127,10 @@ contract VerifiablePhoneNumbers {
         PhoneNumber calldata phoneNumber
     ) external view returns (bool) {
         // Third-party validates that an account owns a particular phone number
+        require(account != address(0));
+        return
+            issuedProofsOfOwnership[phoneNumber.countryCode][
+                phoneNumber.number
+            ] == account;
     }
 }
