@@ -32,6 +32,9 @@ jobs:
 
       - name: Install latest truffle
         run: npm -g install truffle
+      
+      - name: Install npm packages
+        run: npm install
 
       - name: Run tests
-        run: truffle test
+        run: truffle test --network test

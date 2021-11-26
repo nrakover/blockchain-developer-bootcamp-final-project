@@ -21,9 +21,6 @@
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const fs = require('fs');
 
-const mnemonic = fs.readFileSync(".wallet-mnemonic").toString().trim();
-const infuraProjectId = fs.readFileSync(".infura-project-id").toString().trim();
-
 module.exports = {
   /**
    * Networks define how you connect to your ethereum client and let you set the
@@ -36,6 +33,11 @@ module.exports = {
    */
 
   networks: {
+    test: {
+      host: "localhost",
+      port: 8545,
+      network_id: "*" // Match any network id
+    },
     // Useful for testing. The `development` name is special - truffle uses it by default
     // if it's defined here and no other network is specified at the command line.
     // You should run a client (like ganache-cli, geth or parity) in a separate terminal
@@ -67,7 +69,10 @@ module.exports = {
     // skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     // },
     rinkeby: {
-      provider: () => new HDWalletProvider(mnemonic, `wss://rinkeby.infura.io/ws/v3/${infuraProjectId}`),
+      provider: () => new HDWalletProvider(
+        fs.readFileSync(".wallet-mnemonic").toString().trim(),
+        `wss://rinkeby.infura.io/ws/v3/${fs.readFileSync(".infura-project-id").toString().trim()}`
+      ),
       network_id: 4,       // Rinkeby's id
       gas: 5500000,        // Rinkeby has a lower block limit than mainnet
       confirmations: 2,    // # of confs to wait between deployments. (default: 0)
