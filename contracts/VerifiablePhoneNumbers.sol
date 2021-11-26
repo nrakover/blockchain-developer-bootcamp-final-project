@@ -71,7 +71,7 @@ contract VerifiablePhoneNumbers {
 
     /* State */
     address public owner;
-    uint8 public numSelectedVerifiers = 1;
+    uint8 public numVerifiersPerRequest;
     uint32 public numVerifiers;
     mapping(uint256 => address) public verifiers;
 
@@ -87,12 +87,22 @@ contract VerifiablePhoneNumbers {
     mapping(uint256 => mapping(address => VerificationChallenge))
         private verificationChallenges;
 
-    constructor(address[] memory _verifiers) {
+    constructor(uint8 _numVerifiersPerRequest, address[] memory _verifiers) {
+        require(
+            _numVerifiersPerRequest <= MAX_SELECTED_VERIFIERS,
+            string(
+                abi.encodePacked(
+                    "Verifier per request cannot exceed ",
+                    MAX_SELECTED_VERIFIERS
+                )
+            )
+        );
         require(
             _verifiers.length < type(uint32).max,
             "Number of verifiers exceeds capacity (2^32 - 1)"
         );
         owner = msg.sender;
+        numVerifiersPerRequest = _numVerifiersPerRequest;
         numVerifiers = uint32(_verifiers.length);
         for (uint256 i = 0; i < _verifiers.length; i++) {
             verifiers[i] = _verifiers[i];
@@ -103,7 +113,9 @@ contract VerifiablePhoneNumbers {
 
     modifier isActiveVerification(uint256 verificationRequestId) {
         require(
-            requestStates[verificationRequestId] == VerificationState.InProgress
+            requestStates[verificationRequestId] ==
+                VerificationState.InProgress,
+            "Not an active verification request"
         );
         _;
     }
@@ -244,6 +256,16 @@ contract VerifiablePhoneNumbers {
 
     /* Private helpers */
 
+    function _computeChallengeHash(
+        address verifier,
+        address requester,
+        PhoneNumber memory phoneNumber,
+        uint32 secretCode
+    ) private pure returns (bytes32) {
+        return
+            keccak256(abi.encode(verifier, requester, phoneNumber, secretCode));
+    }
+
     function _maybeCompleteVerification(uint256 verificationRequestId) private {
         VerificationRequest memory request = verificationRequests[
             verificationRequestId
@@ -334,16 +356,6 @@ contract VerifiablePhoneNumbers {
         return false;
     }
 
-    function _computeChallengeHash(
-        address verifier,
-        address requester,
-        PhoneNumber memory phoneNumber,
-        uint32 secretCode
-    ) private pure returns (bytes32) {
-        return
-            keccak256(abi.encode(verifier, requester, phoneNumber, secretCode));
-    }
-
     function _getRandomSeed(uint256 verificationRequestId)
         private
         view
@@ -365,13 +377,13 @@ contract VerifiablePhoneNumbers {
         private
         returns (address[] storage)
     {
-        assert(numSelectedVerifiers <= MAX_SELECTED_VERIFIERS);
+        assert(numVerifiersPerRequest <= MAX_SELECTED_VERIFIERS);
         uint256 seed = _getRandomSeed(verificationRequestId);
 
         address[] storage selectedVerifiers = verificationRequests[
             verificationRequestId
         ].selectedVerifiers;
-        for (uint8 i = 0; i < numSelectedVerifiers; i++) {
+        for (uint8 i = 0; i < numVerifiersPerRequest; i++) {
             uint32 verifierIndex = uint32(seed % numVerifiers);
             selectedVerifiers.push(verifiers[verifierIndex]);
             seed = seed / numVerifiers;
