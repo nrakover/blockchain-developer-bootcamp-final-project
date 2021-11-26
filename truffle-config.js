@@ -21,9 +21,6 @@
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const fs = require('fs');
 
-const mnemonic = fs.readFileSync(".wallet-mnemonic").toString().trim();
-const infuraProjectId = fs.readFileSync(".infura-project-id").toString().trim();
-
 module.exports = {
   /**
    * Networks define how you connect to your ethereum client and let you set the
@@ -42,7 +39,7 @@ module.exports = {
     // tab if you use this network and you must also set the `host`, `port` and `network_id`
     // options below to some value.
     //
-    development: {
+    local: {
       host: "host.docker.internal",     // Localhost (default: none)
       port: 7545,            // Standard Ethereum port (default: none)
       network_id: "*",       // Any network (default: none)
@@ -67,7 +64,10 @@ module.exports = {
     // skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     // },
     rinkeby: {
-      provider: () => new HDWalletProvider(mnemonic, `wss://rinkeby.infura.io/ws/v3/${infuraProjectId}`),
+      provider: () => new HDWalletProvider(
+        fs.readFileSync(".wallet-mnemonic").toString().trim(),
+        `wss://rinkeby.infura.io/ws/v3/${fs.readFileSync(".infura-project-id").toString().trim()}`
+      ),
       network_id: 4,       // Rinkeby's id
       gas: 5500000,        // Rinkeby has a lower block limit than mainnet
       confirmations: 2,    // # of confs to wait between deployments. (default: 0)
