@@ -5,6 +5,7 @@ import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
+import TextareaAutosize from '@mui/material/TextareaAutosize';
 import Typography from '@mui/material/Typography';
 import { VerificationRequest, MetaMaskConnection } from './DappApi';
 import { createSignedChallengeMessage } from './ChallengeUtils';
@@ -46,11 +47,9 @@ class ActiveChallengeCard extends React.Component<ActiveChallengeCardProps, Stat
                             Send the following text to +{request.phoneNumber.countryCode} {request.phoneNumber.number}
                         </Typography>
                         <Divider variant="middle" />
-                        <div>
-                            <Typography sx={{ fontSize: 12, my: '2px' }} color="text.secondary" gutterBottom align={'left'} noWrap={false}>
-                                {challengeMessage || 'Loading...'}
-                            </Typography>
-                        </div>
+                        <Box sx={{ my: '2px' }}>
+                            <TextareaAutosize value={challengeMessage || 'Loading...'} disabled={true} />
+                        </Box>
                     </CardContent>
                     {challengeMessage !== null && (
                         <CardActions>

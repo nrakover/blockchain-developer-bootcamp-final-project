@@ -57,6 +57,35 @@ class Dapp {
                 return { verificationRequestId: verificationRequestLog.args[0].toNumber(), phoneNumber: phoneNumber };
             });
     }
+
+    static submitChallengeResponse(
+        connection: MetaMaskConnection,
+        verificationRequestId: number,
+        verifierAddress: string,
+        secretCode: number,
+        onSuccess: () => void,
+        onFailure: () => void
+    ) {
+        const contractWithSigner = connection.verificationContract.connect(connection.signer);
+        contractWithSigner.functions.submitChallengeResponse(verificationRequestId, verifierAddress, secretCode)
+            .then((response: any) => {
+                // @ts-ignore
+                return response.wait();
+            })
+            .then((receipt: any) => {
+                const verificationSucceededEvents = receipt.events.filter((event: any) => event.event === "LogVerificationSucceeded");
+                if (verificationSucceededEvents.length === 1) {
+                    onSuccess();
+                    return;
+                }
+
+                const verificationFailedEvents = receipt.events.filter((event: any) => event.event === "LogVerificationFailed");
+                if (verificationFailedEvents.length === 1) {
+                    onFailure();
+                    return;
+                }
+            });
+    }
 }
 
 export { Dapp };

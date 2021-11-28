@@ -27,6 +27,16 @@ class App extends React.Component<AppProps, State> {
     });
   }
 
+  handleVerificationSuccess = (request: VerificationRequest) => {
+    this.setState({ pendingVerificationRequest: null });
+    alert(`Sucess! Your phone number (+${request.phoneNumber.countryCode} ${request.phoneNumber.number}) has been verified`);
+  }
+
+  handleVerificationFailure = (request: VerificationRequest) => {
+    this.setState({ pendingVerificationRequest: null });
+    alert(`Failed to verify ownership of +${request.phoneNumber.countryCode} ${request.phoneNumber.number}`);
+  }
+
   render() {
     const { connection, pendingVerificationRequest } = this.state;
     return (
@@ -43,7 +53,14 @@ class App extends React.Component<AppProps, State> {
                   }
                 />
               )}
-              {pendingVerificationRequest !== null && (<PendingVerificationCard pendingVerificationRequest={pendingVerificationRequest} />)}
+              {pendingVerificationRequest !== null && (
+                <PendingVerificationCard
+                  pendingVerificationRequest={pendingVerificationRequest}
+                  connection={connection}
+                  onVerificationSuccess={this.handleVerificationSuccess}
+                  onVerificationFailure={this.handleVerificationFailure}
+                />
+              )}
             </div>
           )}
         </header>
