@@ -65,8 +65,8 @@ module.exports = {
     // },
     rinkeby: {
       provider: () => new HDWalletProvider(
-        fs.readFileSync(".wallet-mnemonic").toString().trim(),
-        `wss://rinkeby.infura.io/ws/v3/${fs.readFileSync(".infura-project-id").toString().trim()}`
+        fs.readFileSync("/workspaces/final-project/.wallet-mnemonic").toString().trim(),
+        `wss://rinkeby.infura.io/ws/v3/${fs.readFileSync("/workspaces/final-project/.infura-project-id").toString().trim()}`
       ),
       network_id: 4,       // Rinkeby's id
       gas: 5500000,        // Rinkeby has a lower block limit than mainnet

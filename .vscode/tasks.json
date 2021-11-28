@@ -1,0 +1,43 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Compile Frontend",
+            "type": "shell",
+            "command": "npx babel --extensions \".ts\" --copy-files . --out-dir fe_lib",
+            "options": {
+                "cwd": "${workspaceFolder}/frontend",
+                "env": {
+                    "BASH_ENV": "${workspaceFolder}/frontend/.env"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Compile Requester Client",
+            "type": "shell",
+            "command": "yarn build",
+            "options": {
+                "cwd": "${workspaceFolder}/client/requester",
+                "env": {
+                    "BASH_ENV": "${workspaceFolder}/lient/requester/.env"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Compile Verifier Client",
+            "type": "shell",
+            "command": "yarn build",
+            "options": {
+                "cwd": "${workspaceFolder}/client/verifier",
+                "env": {
+                    "BASH_ENV": "${workspaceFolder}/client/verifier/.env"
+                }
+            },
+            "problemMatcher": []
+        },
+    ]
+}

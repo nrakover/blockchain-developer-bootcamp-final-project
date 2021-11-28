@@ -1,0 +1,7 @@
+VerifiablePhoneNumbers
+-----------------------------
+
+> Network name:    'rinkeby'
+> Network id:      4
+
+Contract address:   0x270712C7AC982327a575FC0d19D07887364D64d6

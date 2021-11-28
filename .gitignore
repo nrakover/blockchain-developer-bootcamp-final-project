@@ -2,5 +2,11 @@
 .infura-project-id
 .env
 build
-node_modules
 contracts/artifacts
+
+# Node
+node_modules
+npm-debug.log
+
+# Babel
+fe_lib/
