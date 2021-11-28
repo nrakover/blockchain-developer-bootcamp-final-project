@@ -4,6 +4,13 @@ pragma solidity 0.8.9;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./RandomUtil.sol";
 
+/**
+    @title A service for decentralized verification of phone number ownership.
+    @author Nico Rakover
+    @notice This version of the contract makes the address-phone relationship public, so be mindful of
+        exposing information you would rather keep private.
+    @custom:experimental This is an experimental contract.
+*/
 contract VerifiablePhoneNumbers is Ownable {
     /* Types */
     struct PhoneNumber {
@@ -151,7 +158,9 @@ contract VerifiablePhoneNumbers is Ownable {
     /* API */
 
     /**
-        @notice User requests verification of a given phone number
+        @notice User requests verification of a given phone number.
+        @param phoneNumber The number that the caller would like to prove ownership for.
+        @return verificationRequestId The unique indentifier for this verification request.
      */
     function requestVerification(PhoneNumber calldata phoneNumber)
         external
@@ -186,7 +195,9 @@ contract VerifiablePhoneNumbers is Ownable {
     }
 
     /**
-        @notice Verifier issues a challenge for a verification request
+        @notice Verifier issues a challenge for a verification request.
+        @param verificationRequestId The verification for which this challenge is being issued.
+        @param challengeHash The keccak256 hash of [verifier address, requester address, phone number, secret uint32 code]
      */
     function recordVerificationChallenge(
         uint256 verificationRequestId,
@@ -211,7 +222,11 @@ contract VerifiablePhoneNumbers is Ownable {
     }
 
     /**
-        @notice Requesting user submits a challenge response
+        @notice Requesting user submits a challenge response, which should be the secret uint32 code
+            corresponding to the associated challenge hash.
+        @param verificationRequestId The verification for which this challenge was issued.
+        @param verifier The address of the verifier that submitted the challenge.
+        @param secretCode The secret code shared with the requester via SMS (off-chain).
      */
     function submitChallengeResponse(
         uint256 verificationRequestId,
@@ -249,6 +264,12 @@ contract VerifiablePhoneNumbers is Ownable {
         _maybeCompleteVerification(verificationRequestId);
     }
 
+    /**
+        @notice Convenience method for any party to validate ownership of a phone number.
+        @param account The hypothesized owner.
+        @param phoneNumber The phone number for which this checks ownership.
+        @return whether the account owns this phone number according to previously-completed verifications.
+    */
     function isPhoneNumberOwner(
         address account,
         PhoneNumber calldata phoneNumber
@@ -263,11 +284,21 @@ contract VerifiablePhoneNumbers is Ownable {
 
     /* Admin API */
 
+    /**
+        @notice Allows the contract owner to add a verifier.
+        @dev Note that this allows for duplicate verifiers, which affects odds of selection.
+        @param verifierToAdd The verifier address to add.
+    */
     function addVerifier(address verifierToAdd) external onlyOwner {
         verifiers[numVerifiers] = verifierToAdd;
         numVerifiers++;
     }
 
+    /**
+        @notice Allows the contract owner to remove a verifier.
+        @dev Note that this method removes _all_ occurences of the verifier in the set.
+        @param verifierToRemove The verifier address to remove.
+    */
     function removeVerifier(address verifierToRemove) external onlyOwner {
         uint32 nextVerifierToSwap = numVerifiers - 1;
         while (
@@ -300,6 +331,10 @@ contract VerifiablePhoneNumbers is Ownable {
         }
     }
 
+    /**
+        @notice Allows the contract owner to change the number of verifiers selected per verification request.
+        @param _numVerifiersPerRequest The desired number of verifiers selected per verification request.
+    */
     function setNumVerifiersPerRequest(uint8 _numVerifiersPerRequest)
         external
         onlyOwner
