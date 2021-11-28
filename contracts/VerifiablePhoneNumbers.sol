@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.9;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./RandomUtil.sol";
 
-contract VerifiablePhoneNumbers {
+contract VerifiablePhoneNumbers is Ownable {
     /* Types */
     struct PhoneNumber {
         uint8 countryCode;
@@ -76,7 +77,6 @@ contract VerifiablePhoneNumbers {
     uint8 constant MAX_SELECTED_VERIFIERS = 8; // This is due to how we generate a random sampling of verifiers
 
     /* State */
-    address public owner;
     uint8 public numVerifiersPerRequest;
     uint32 public numVerifiers;
     mapping(uint256 => address) public verifiers;
@@ -107,7 +107,6 @@ contract VerifiablePhoneNumbers {
             _verifiers.length < type(uint32).max,
             "Number of verifiers exceeds capacity (2^32 - 1)"
         );
-        owner = msg.sender;
         numVerifiersPerRequest = _numVerifiersPerRequest;
         numVerifiers = uint32(_verifiers.length);
         for (uint256 i = 0; i < _verifiers.length; i++) {
@@ -260,6 +259,53 @@ contract VerifiablePhoneNumbers {
             issuedProofsOfOwnership[phoneNumber.countryCode][
                 phoneNumber.number
             ] == account;
+    }
+
+    /* Admin API */
+
+    function addVerifier(address verifierToAdd) external onlyOwner {
+        verifiers[numVerifiers] = verifierToAdd;
+        numVerifiers++;
+    }
+
+    function removeVerifier(address verifierToRemove) external onlyOwner {
+        uint32 nextVerifierToSwap = numVerifiers - 1;
+        while (
+            nextVerifierToSwap >= 0 &&
+            verifiers[nextVerifierToSwap] == verifierToRemove
+        ) {
+            delete verifiers[nextVerifierToSwap];
+            nextVerifierToSwap--;
+            numVerifiers--;
+        }
+
+        for (uint32 i = 0; i < numVerifiers; i++) {
+            if (i >= nextVerifierToSwap) {
+                break;
+            }
+            if (verifiers[i] == verifierToRemove) {
+                verifiers[i] = verifiers[nextVerifierToSwap];
+                delete verifiers[nextVerifierToSwap];
+                nextVerifierToSwap--;
+                numVerifiers--;
+                while (
+                    nextVerifierToSwap > 0 &&
+                    verifiers[nextVerifierToSwap] == verifierToRemove
+                ) {
+                    delete verifiers[nextVerifierToSwap];
+                    nextVerifierToSwap--;
+                    numVerifiers--;
+                }
+            }
+        }
+    }
+
+    function setNumVerifiersPerRequest(uint8 _numVerifiersPerRequest)
+        external
+        onlyOwner
+    {
+        require(_numVerifiersPerRequest < MAX_SELECTED_VERIFIERS);
+        numVerifiersPerRequest = _numVerifiersPerRequest;
     }
 
     /* Private helpers */
