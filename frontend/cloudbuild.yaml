@@ -1,0 +1,37 @@
+steps:
+    # Pull main image to use as build cache
+    - name: 'gcr.io/cloud-builders/docker'
+      entrypoint: 'bash'
+      args:
+        - '-c'
+        - |
+          docker pull ${_GCR_HOSTNAME}/$PROJECT_ID/$REPO_NAME-${_CLIENT_AGENT}-frontend:main || exit 0
+    # Build service image
+    - name: 'gcr.io/cloud-builders/docker'
+      args: [
+            'build', '--pull',
+            '--build-arg CLIENT_DIR=client/${_CLIENT_AGENT},CONTRACT_ADDRESS=${_CONTRACT_ADDRESS}',
+            '-t', '${_GCR_HOSTNAME}/$PROJECT_ID/$REPO_NAME-${_CLIENT_AGENT}-frontend:$BRANCH_NAME',
+            '--cache-from', '${_GCR_HOSTNAME}/$PROJECT_ID/$REPO_NAME-${_CLIENT_AGENT}-frontend:main',
+            '-f', 'builds/frontend/Dockerfile',
+            '.'
+        ]
+    # Push image if main branch
+    - name: 'gcr.io/cloud-builders/docker'
+      entrypoint: 'bash'
+      args:
+        - '-c'
+        - |
+          [[ $BRANCH_NAME != main ]] || docker push ${_GCR_HOSTNAME}/$PROJECT_ID/$REPO_NAME-${_CLIENT_AGENT}-frontend:$BRANCH_NAME
+    # Deploy container image to Cloud Run
+    - name: 'gcr.io/cloud-builders/gcloud'
+      entrypoint: 'bash'
+      args:
+        - '-c'
+        - |
+          [[ $BRANCH_NAME != main ]] || \
+            gcloud run deploy ${_SERVICE_NAME} \
+            --image ${_GCR_HOSTNAME}/$PROJECT_ID/$REPO_NAME-${_CLIENT_AGENT}-frontend:$BRANCH_NAME \
+            --region ${_SERVICE_REGION} --project $PROJECT_ID \
+            --platform managed --allow-unauthenticated
+timeout: 300s

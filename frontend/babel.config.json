@@ -1,0 +1,13 @@
+{
+    "presets": [
+        [
+            "@babel/env",
+            {
+                "targets": "last 2 versions or > .5% and not dead",
+                "useBuiltIns": "usage",
+                "corejs": "3.9.0"
+            }
+        ],
+        "@babel/preset-typescript"
+    ]
+}
