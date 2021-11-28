@@ -10,6 +10,7 @@ interface PhoneNumber {
 
 interface VerificationRequest {
     verificationRequestId: number;
+    requesterAddress: string;
     phoneNumber: PhoneNumber;
 }
 
@@ -30,10 +31,21 @@ async function _fetchUnverifiedRequests(verificationRequestId: number, challenge
                 .filter(event => !(event.args![0] in challengedRequests))
                 .map(event => {
                     const reqId = event.args![0].toNumber();
+                    const requesterAddress = event.args![1];
                     const phoneNumber = { countryCode: event.args![3], number: event.args![4] };
-                    return { verificationRequestId: reqId, phoneNumber: phoneNumber };
+                    return { verificationRequestId: reqId, requesterAddress: requesterAddress, phoneNumber: phoneNumber };
                 });
         });
+}
+
+function _computeChallengeHash(verificationRequest: VerificationRequest, verifierAddress: string, secretCode: number): string {
+    const requesterAddress = verificationRequest.requesterAddress;
+    const phoneNumber = verificationRequest.phoneNumber;
+    const encodedChallengeString = ethers.utils.defaultAbiCoder.encode(
+        ['address', 'address', 'tuple(uint8, uint40)', 'uint32'],
+        [verifierAddress, requesterAddress, [phoneNumber.countryCode, phoneNumber.number], secretCode]
+    );
+    return ethers.utils.keccak256(encodedChallengeString);
 }
 
 
@@ -80,6 +92,16 @@ class Dapp {
                     });
             });
 
+    }
+
+    static async recordVerificationChallenge(connection: MetaMaskConnection, verificationRequest: VerificationRequest, secretCode: number): Promise<void> {
+        const challengeHash = _computeChallengeHash(verificationRequest, connection.account, secretCode);
+        const contractWithSigner = connection.verificationContract.connect(connection.signer);
+        return contractWithSigner.functions.recordVerificationChallenge(verificationRequest.verificationRequestId, challengeHash)
+            .then((response: any) => {
+                // @ts-ignore
+                return response.wait();
+            });
     }
 }
 
