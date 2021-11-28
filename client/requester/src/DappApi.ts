@@ -1,7 +1,7 @@
 import detectEthereumProvider from '@metamask/detect-provider';
 import { ethers } from 'ethers';
 
-import { loadVerifiablePhoneNumbersABI } from './ContractLoader';
+import { loadVerifiablePhoneNumbersContract } from './ContractLoader';
 
 interface PhoneNumber {
     countryCode: number;
@@ -31,8 +31,7 @@ class Dapp {
             const ethersProvider = new ethers.providers.Web3Provider(provider);
             const signer = ethersProvider.getSigner();
 
-            const contractAbi = loadVerifiablePhoneNumbersABI();
-            const verificationContract = new ethers.Contract(process.env.REACT_APP_VERIFICATION_CONTRACT_ADDRESS!, contractAbi, ethersProvider);
+            const verificationContract = loadVerifiablePhoneNumbersContract(ethersProvider);
 
             onConnect({ provider: ethersProvider, signer: signer, verificationContract: verificationContract, account: await signer.getAddress() });
         } else {

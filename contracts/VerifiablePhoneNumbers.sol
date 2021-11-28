@@ -30,10 +30,14 @@ contract VerifiablePhoneNumbers {
     }
 
     /* Events */
+
+    // `countryCode` and `number` are denormalized because `phoneNumber` is included only as a hash
     event LogVerificationRequested(
         uint256 indexed verificationRequestId,
         address indexed requester,
-        PhoneNumber indexed phoneNumber
+        PhoneNumber indexed phoneNumber,
+        uint8 countryCodeDenorm,
+        uint40 numberDenorm
     );
     event LogVerifierSelected(
         address indexed verifier,
@@ -41,7 +45,7 @@ contract VerifiablePhoneNumbers {
     );
     event LogChallengeRecorded(
         uint256 indexed verificationRequestId,
-        address verifier
+        address indexed verifier
     );
     event LogChallengeCompleted(
         uint256 indexed verificationRequestId,
@@ -167,7 +171,9 @@ contract VerifiablePhoneNumbers {
         emit LogVerificationRequested(
             verificationRequestId,
             msg.sender,
-            phoneNumber
+            phoneNumber,
+            phoneNumber.countryCode,
+            phoneNumber.number
         );
         for (uint8 i = 0; i < selectedVerifiers.length; i++) {
             emit LogVerifierSelected(
