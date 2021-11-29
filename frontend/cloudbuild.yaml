@@ -14,7 +14,7 @@ steps:
             '--build-arg', 'CONTRACT_ADDRESS=${_CONTRACT_ADDRESS}',
             '-t', '${_GCR_HOSTNAME}/$PROJECT_ID/$REPO_NAME-${_CLIENT_AGENT}-frontend:$BRANCH_NAME',
             '--cache-from', '${_GCR_HOSTNAME}/$PROJECT_ID/$REPO_NAME-${_CLIENT_AGENT}-frontend:main',
-            '-f', 'builds/frontend/Dockerfile',
+            '-f', 'frontend/Dockerfile',
             '.'
         ]
     # Push image if main branch
