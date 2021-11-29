@@ -35,4 +35,4 @@ steps:
             --image ${_GCR_HOSTNAME}/$PROJECT_ID/$REPO_NAME-${_CLIENT_AGENT}-frontend:$BRANCH_NAME \
             --region ${_SERVICE_REGION} --project $PROJECT_ID \
             --platform managed --allow-unauthenticated
-timeout: 300s
+timeout: 360s
