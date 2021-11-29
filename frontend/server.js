@@ -1,10 +1,10 @@
 'use strict';
 
-import path from 'path';
-import express from 'express';
+const path = require('path');
+const express = require('express');
 
 const PORT = process.env.PORT !== undefined ? parseInt(process.env.PORT) : 3000;
-const CLIENT_BUILD_DIR: string = process.env.CLIENT_BUILD_PATH!;
+const CLIENT_BUILD_DIR = process.env.CLIENT_BUILD_PATH;
 
 const app = express();
 
