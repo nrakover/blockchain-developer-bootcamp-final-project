@@ -1,5 +1,7 @@
 # 2021 Consensys bootcamp project - Phone number verification
-_Author: Nico Rakover_ (nrakover@gmail.com)  |  `rakover.eth`  |  Ethereum `0x11F3083E679B0De318dE58751385D7ACeedF698A`
+_Author: Nico Rakover_
+
+nrakover@gmail.com  |  `rakover.eth`  |  Ethereum `0x11F3083E679B0De318dE58751385D7ACeedF698A`
 
 ## Problem statement
 - Historically, phone numbers have been used as a sybil-resistant form of identity by many (centralized) services
