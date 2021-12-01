@@ -4,18 +4,6 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Compile Frontend",
-            "type": "shell",
-            "command": "npx babel --extensions \".ts\" --copy-files . --out-dir fe_lib",
-            "options": {
-                "cwd": "${workspaceFolder}/frontend",
-                "env": {
-                    "BASH_ENV": "${workspaceFolder}/frontend/.env"
-                }
-            },
-            "problemMatcher": []
-        },
-        {
             "label": "Compile Requester Client",
             "type": "shell",
             "command": "yarn build",
@@ -37,6 +25,93 @@
                     "BASH_ENV": "${workspaceFolder}/client/verifier/.env"
                 }
             },
+            "problemMatcher": []
+        },
+        {
+            "label": "Install Requester Deps",
+            "type": "shell",
+            "command": "npm install",
+            "options": {
+                "cwd": "${workspaceFolder}/client/requester",
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Install Verifier Deps",
+            "type": "shell",
+            "command": "npm install",
+            "options": {
+                "cwd": "${workspaceFolder}/client/verifier",
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Install Frontend Deps",
+            "type": "shell",
+            "command": "npm install",
+            "options": {
+                "cwd": "${workspaceFolder}/frontend",
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Install Root Deps",
+            "type": "shell",
+            "command": "npm install",
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Install All Deps",
+            "dependsOn": [
+                "Install Root Deps",
+                "Install Frontend Deps",
+                "Install Verifier Deps",
+                "Install Requester Deps",
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Truffle Tests",
+            "type": "shell",
+            "command": "truffle test",
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Spin up Requester Client",
+            "type": "shell",
+            "command": "yarn start",
+            "options": {
+                "cwd": "${workspaceFolder}/client/requester",
+                "env": {
+                    "BASH_ENV": "${workspaceFolder}/lient/requester/.env"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Spin up Verifier Client",
+            "type": "shell",
+            "command": "yarn start",
+            "options": {
+                "cwd": "${workspaceFolder}/client/verifier",
+                "env": {
+                    "BASH_ENV": "${workspaceFolder}/lient/verifier/.env"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Spin up clients",
+            "dependsOn": [
+                "Spin up Requester Client",
+                "Spin up Verifier Client",
+            ],
             "problemMatcher": []
         },
     ]
