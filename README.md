@@ -3,6 +3,8 @@ _Author: Nico Rakover_
 
 nrakover@gmail.com  |  `rakover.eth`  |  Ethereum `0x11F3083E679B0De318dE58751385D7ACeedF698A`
 
+**Project walkthrough video**: https://www.loom.com/share/65112939ea25449f9d733d409faf53bc
+
 ## Problem statement
 - Historically, phone numbers have been used as a sybil-resistant form of identity by many (centralized) services
 - A number of existing and hypothetical _decentralized_ services could benefit from on-chain proof that an address "owns" a phone number (i.e. the controlling entity has access to any message sent to the number)
